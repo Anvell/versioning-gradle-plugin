@@ -34,4 +34,4 @@ gradleEnterprise {
     }
 }
 
-include(":plugin")
+include(":versioning")
