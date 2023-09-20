@@ -2,7 +2,7 @@ package io.github.anvell.versioning.gradle.plugin
 
 import io.github.anvell.versioning.gradle.plugin.actions.git.addTag
 import io.github.anvell.versioning.gradle.plugin.actions.git.getBranchName
-import io.github.anvell.versioning.gradle.plugin.actions.git.getTag
+import io.github.anvell.versioning.gradle.plugin.actions.git.getLatestTag
 import io.github.anvell.versioning.gradle.plugin.actions.git.pushTag
 import io.github.anvell.versioning.gradle.plugin.models.CalendarVersion
 import org.gradle.api.Plugin
@@ -50,7 +50,7 @@ class GradleVersioningPlugin : Plugin<Project> {
 
     private fun createVersionTag(pointInTime: LocalDateTime): String {
         val version = CalendarVersion
-            .parse(getTag().substringBefore('-'))
+            .parse(getLatestTag().substringBefore('-'))
             .getOrNull()
             ?.increment(pointInTime)
             ?: CalendarVersion.generate(pointInTime, revision = 1)
