@@ -5,6 +5,8 @@ interface VcsActions {
 
     fun getLatestTag(): String
 
+    fun getHeadTags(): List<String>
+
     fun addTag(tag: String)
 
     fun pushTag(remote: String, tag: String)
