@@ -16,13 +16,13 @@ class GradleVersioningPlugin : Plugin<Project> {
         val extension = project
             .extensions
             .create("configureVersioning", GradleVersioningExtension::class.java)
-
-        project.tasks.register("publishVersionTag") { task ->
-            task.group = "versioning"
-            with(extension) {
+            .apply {
                 remote.convention("origin")
                 autoPush.convention(false)
             }
+
+        project.tasks.register("publishVersionTag") { task ->
+            task.group = "versioning"
 
             task.doLast {
                 val branch = getBranchName()
