@@ -1,47 +1,66 @@
 package io.github.anvell.versioning.gradle.plugin
 
 import io.github.anvell.versioning.gradle.plugin.actions.GitVcsActions
-import io.github.anvell.versioning.gradle.plugin.actions.VcsActions
 import io.github.anvell.versioning.gradle.plugin.models.CalendarVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.configurationcache.extensions.capitalized
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+
+private const val TaskLabel = "publishVersionTag"
+private const val TaskGroupLabel = "versioning"
+private const val ExtensionLabel = "configureVersioning"
 
 class GradleVersioningPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         val extension = project
             .extensions
-            .create("configureVersioning", GradleVersioningExtension::class.java)
+            .create(ExtensionLabel, GradleVersioningExtension::class.java)
             .apply {
                 actions.convention(GitVcsActions())
                 remote.convention("origin")
                 autoPush.convention(false)
+                variants.convention(setOf(""))
+                branches.convention(emptySet())
             }
 
-        project.tasks.register("publishVersionTag") { task ->
-            task.group = "versioning"
+        with(project) {
+            afterEvaluate {
+                for (variant in extension.variants.get()) {
+                    tasks.register(TaskLabel + variant.capitalized()) { task ->
+                        task.group = TaskGroupLabel
 
-            task.doLast { publishVersionTag(extension) }
+                        task.doLast { publishVersionTag(extension, variant) }
+                    }
+                }
+            }
         }
     }
 
-    private fun publishVersionTag(extension: GradleVersioningExtension) {
+    private fun publishVersionTag(
+        extension: GradleVersioningExtension,
+        variant: String? = null
+    ) {
         val actions = extension.actions.get()
         val branch = actions.getBranchName()
         val branches = extension.branches.get()
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val suffix = branches[branch]
-            .takeUnless(String?::isNullOrBlank)
-            ?.let { "-$it" }
-            ?: ""
 
-        if (branch !in branches) {
+        if (branches.isNotEmpty() &&
+            branches.none { it.matches(branch) }
+        ) {
             println("Skipping auto versioning for current branch")
             return
         }
-        val version = createVersionTag(actions, now) + suffix
+
+        val previousTag = actions.getLatestTag()
+        val now = LocalDateTime.now(ZoneOffset.UTC)
+        val suffix = variant
+            .takeUnless(String?::isNullOrBlank)
+            ?.let { "-$it" }
+            ?: ""
+        val version = createVersionTag(previousTag, now) + suffix
 
         actions.addTag(version)
 
@@ -51,11 +70,11 @@ class GradleVersioningPlugin : Plugin<Project> {
     }
 
     private fun createVersionTag(
-        actions: VcsActions,
+        previousTag: String,
         pointInTime: LocalDateTime
     ): String {
         val version = CalendarVersion
-            .parse(actions.getLatestTag().substringBefore('-'))
+            .parse(previousTag.substringBefore('-'))
             .getOrNull()
             ?.increment(pointInTime)
             ?: CalendarVersion.generate(pointInTime, revision = 1)
