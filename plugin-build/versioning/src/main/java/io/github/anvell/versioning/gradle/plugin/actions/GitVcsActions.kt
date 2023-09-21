@@ -27,6 +27,12 @@ class GitVcsActions : VcsActions {
         tag
     }
 
+    override fun getHeadTags(): List<String> = runCommand(
+        "git tag --points-at HEAD"
+    ) {
+        readLines().map(String::trim)
+    }
+
     override fun addTag(tag: String) = runCommand(
         "git tag $tag"
     ) {

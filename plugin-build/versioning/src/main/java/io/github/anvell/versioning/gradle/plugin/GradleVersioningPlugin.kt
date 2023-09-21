@@ -54,31 +54,49 @@ class GradleVersioningPlugin : Plugin<Project> {
             return
         }
 
-        val previousTag = actions.getLatestTag()
+        val latestTag = actions.getLatestTag()
         val now = LocalDateTime.now(ZoneOffset.UTC)
+        val headTags = actions.getHeadTags()
+        val version = if (headTags.isNotEmpty()) {
+            val headVersions = buildMap {
+                for (tag in headTags) {
+                    CalendarVersion.parse(tag).onSuccess {
+                        put(tag.substringAfter('-', ""), it)
+                    }
+                }
+            }
+
+            if (variant.orEmpty() in headVersions) {
+                println("Version tag is already applied on current commit")
+                return
+            }
+
+            headVersions
+                .values
+                .firstOrNull()
+                ?: createNextVersion(latestTag, now)
+        } else {
+            createNextVersion(latestTag, now)
+        }
         val suffix = variant
             .takeUnless(String?::isNullOrBlank)
             ?.let { "-$it" }
-            ?: ""
-        val version = createVersionTag(previousTag, now) + suffix
+            .orEmpty()
+        val versionTag = version.toString() + suffix
 
-        actions.addTag(version)
+        actions.addTag(versionTag)
 
         if (extension.autoPush.get()) {
-            actions.pushTag(extension.remote.get(), version)
+            actions.pushTag(extension.remote.get(), versionTag)
         }
     }
 
-    private fun createVersionTag(
+    private fun createNextVersion(
         previousTag: String,
         pointInTime: LocalDateTime
-    ): String {
-        val version = CalendarVersion
-            .parse(previousTag.substringBefore('-'))
-            .getOrNull()
-            ?.increment(pointInTime)
-            ?: CalendarVersion.generate(pointInTime, revision = 1)
-
-        return version.toString()
-    }
+    ) = CalendarVersion
+        .parse(previousTag)
+        .getOrNull()
+        ?.increment(pointInTime)
+        ?: CalendarVersion.generate(pointInTime, revision = 1)
 }

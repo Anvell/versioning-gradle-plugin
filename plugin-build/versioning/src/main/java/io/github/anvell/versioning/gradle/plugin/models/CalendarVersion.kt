@@ -36,7 +36,9 @@ internal data class CalendarVersion(
         )
 
         fun parse(versionTag: String) = runCatching {
-            val rawValues = versionTag.split('.')
+            val rawValues = versionTag
+                .substringBefore('-')
+                .split('.')
 
             require(rawValues.size == 3) {
                 "Value '$versionTag' does not match versioning scheme."
