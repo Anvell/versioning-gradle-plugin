@@ -10,4 +10,6 @@ interface VcsActions {
     fun addTag(tag: String)
 
     fun pushTag(remote: String, tag: String)
+
+    fun getLatestContents(filePath: String): String
 }
