@@ -14,3 +14,4 @@ versionCheck = { id = "com.github.ben-manes.versions", version.ref = "versionChe
 
 [libraries]
 junit = "junit:junit:4.13.2"
+toml = "org.tomlj:tomlj:1.1.0"
