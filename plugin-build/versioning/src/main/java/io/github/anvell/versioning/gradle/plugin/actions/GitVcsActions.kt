@@ -56,9 +56,9 @@ class GitVcsActions : VcsActions {
         }
 
     override fun getLatestContents(filePath: String): String {
-        val hash = runCommand(
-            "git", "log", "--all", "--pretty=format:%H", "-n", "1"
-        ) { readText() }
+        val hash = runCommand("git", "log", "--all", "--pretty=format:%H", "-n", "1") {
+            readText()
+        }
 
         return runCommand("git", "show", "$hash:$filePath") { readText() }
     }
