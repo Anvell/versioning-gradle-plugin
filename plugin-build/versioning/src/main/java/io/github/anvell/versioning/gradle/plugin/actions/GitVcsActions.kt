@@ -30,10 +30,15 @@ class GitVcsActions : VcsActions {
             readLines().map(String::trim)
         }
 
-    override fun commitFile(filepath: String, comment: String) =
+    override fun commitFile(filepath: String, comment: String) {
+        runCommand("git", "add", filepath) {
+            println(readText())
+        }
+
         runCommand("git", "commit", "-m", comment, filepath) {
             println(readText())
         }
+    }
 
     override fun addTag(tag: String) =
         runCommand("git", "tag", tag) {
