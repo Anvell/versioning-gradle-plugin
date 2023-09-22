@@ -34,8 +34,23 @@ class GitVcsActions : VcsActions {
         readLines().map(String::trim)
     }
 
+    override fun commitFile(
+        filepath: String,
+        comment: String
+    ) = runCommand(
+        """git commit -m "$comment" $filepath"""
+    ) {
+        println(readText())
+    }
+
     override fun addTag(tag: String) = runCommand(
         "git tag $tag"
+    ) {
+        println(readText())
+    }
+
+    override fun pushHead(remote: String) = runCommand(
+        "git push $remote HEAD"
     ) {
         println(readText())
     }
