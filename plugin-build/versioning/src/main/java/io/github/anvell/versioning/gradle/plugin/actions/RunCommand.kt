@@ -5,10 +5,10 @@ import java.io.Reader
 import java.util.concurrent.TimeUnit
 
 internal fun <T> runCommand(
-    command: String,
+    vararg values: String,
     block: Reader.() -> T
 ): T = try {
-    ProcessBuilder(command.split("\\s".toRegex()))
+    ProcessBuilder(values.toList())
         .start()
         .run {
             waitFor(10, TimeUnit.SECONDS)
@@ -17,5 +17,5 @@ internal fun <T> runCommand(
                 .use(block)
         }
 } catch (e: Exception) {
-    throw GradleException(e.message ?: "Error executing command :$command")
+    throw GradleException(e.message ?: "Error executing command :$values")
 }
