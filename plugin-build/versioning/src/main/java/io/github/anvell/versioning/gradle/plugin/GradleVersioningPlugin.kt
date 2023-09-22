@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 private const val PublishTagTaskLabel = "publishVersionTag"
-private const val PublishCatalogTaskLabel = "publishVersionCatalog"
+private const val PublishCatalogTaskLabel = "publishVersion"
 private const val TaskGroupLabel = "versioning"
 private const val ExtensionLabel = "configureVersioning"
 
