@@ -11,5 +11,6 @@ interface GradleVersioningExtension {
     val autoPush: Property<Boolean>
     val variants: SetProperty<String>
     val branches: SetProperty<Regex>
+    val commitTemplate: Property<String>
     val versionCatalog: RegularFileProperty
 }

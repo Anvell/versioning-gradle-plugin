@@ -25,6 +25,7 @@ class GradleVersioningPlugin : Plugin<Project> {
                 autoPush.convention(false)
                 variants.convention(setOf(""))
                 branches.convention(emptySet())
+                commitTemplate.convention("Version: %s")
             }
 
         with(project) {
@@ -70,7 +71,11 @@ class GradleVersioningPlugin : Plugin<Project> {
             val newContent = VersionCatalogManager.serialize(newVersion, newCode)
             file.writeText(newContent)
 
-            actions.commitFile(vcsPath, "Version: $newVersion")
+            val comment = extension
+                .commitTemplate
+                .get()
+                .format(newVersion)
+            actions.commitFile(vcsPath, comment)
         } else {
             val (prevVersion, prevCode) = VersionCatalogManager.deserialize(vcsContent)
             val newVersion = prevVersion.increment(now)
@@ -81,7 +86,11 @@ class GradleVersioningPlugin : Plugin<Project> {
             )
             file.writeText(newContent)
 
-            actions.commitFile(vcsPath, "Version: $prevVersion → $newVersion")
+            val comment = extension
+                .commitTemplate
+                .get()
+                .format("$prevVersion → $newVersion")
+            actions.commitFile(vcsPath, comment)
         }
 
         if (extension.autoPush.get()) {
