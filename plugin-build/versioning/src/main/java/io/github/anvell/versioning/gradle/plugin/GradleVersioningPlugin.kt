@@ -8,7 +8,8 @@ import org.gradle.configurationcache.extensions.capitalized
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-private const val TaskLabel = "publishVersionTag"
+private const val PublishTagTaskLabel = "publishVersionTag"
+private const val PublishCatalogTaskLabel = "publishVersionCatalog"
 private const val TaskGroupLabel = "versioning"
 private const val ExtensionLabel = "configureVersioning"
 
@@ -29,13 +30,54 @@ class GradleVersioningPlugin : Plugin<Project> {
         with(project) {
             afterEvaluate {
                 for (variant in extension.variants.get()) {
-                    tasks.register(TaskLabel + variant.capitalized()) { task ->
+                    tasks.register(PublishTagTaskLabel + variant.capitalized()) { task ->
                         task.group = TaskGroupLabel
 
                         task.doLast { publishVersionTag(extension, variant) }
                     }
                 }
+
+                tasks.register(PublishCatalogTaskLabel) { task ->
+                    task.group = TaskGroupLabel
+
+                    task.doLast { publishVersionCatalog(project, extension) }
+                }
             }
+        }
+    }
+
+    private fun publishVersionCatalog(
+        project: Project,
+        extension: GradleVersioningExtension
+    ) {
+        val actions = extension.actions.get()
+        val file = extension.versionCatalog.asFile.get()
+        val vcsPath = file.toRelativeString(project.rootDir)
+        val vcsContent = actions.getLatestContents(vcsPath)
+        val now = LocalDateTime.now(ZoneOffset.UTC)
+
+        if (vcsContent.isEmpty()) {
+            val newVersion = CalendarVersion.generate(now, revision = 1)
+            val newCode = 1L
+            val newContent = VersionCatalogManager.serialize(newVersion, newCode)
+            file.writeText(newContent)
+
+            actions.commitFile(vcsPath, "Version: $newVersion")
+        } else {
+            val (prevVersion, prevCode) = VersionCatalogManager.deserialize(vcsContent)
+            val newVersion = prevVersion.increment(now)
+            val newCode = prevCode + 1
+            val newContent = VersionCatalogManager.serialize(
+                version = prevVersion.increment(now),
+                code = newCode
+            )
+            file.writeText(newContent)
+
+            actions.commitFile(vcsPath, "Version: $prevVersion → $newVersion")
+        }
+
+        if (extension.autoPush.get()) {
+            actions.pushHead(extension.remote.get())
         }
     }
 
@@ -74,9 +116,9 @@ class GradleVersioningPlugin : Plugin<Project> {
             headVersions
                 .values
                 .firstOrNull()
-                ?: createNextVersion(latestTag, now)
+                ?: calendarVersionFrom(latestTag, now)
         } else {
-            createNextVersion(latestTag, now)
+            calendarVersionFrom(latestTag, now)
         }
         val suffix = variant
             .takeUnless(String?::isNullOrBlank)
@@ -91,7 +133,7 @@ class GradleVersioningPlugin : Plugin<Project> {
         }
     }
 
-    private fun createNextVersion(
+    private fun calendarVersionFrom(
         previousTag: String,
         pointInTime: LocalDateTime
     ) = CalendarVersion
