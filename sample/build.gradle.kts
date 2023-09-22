@@ -9,5 +9,5 @@ plugins {
 configureVersioning {
     autoPush.set(false)
     variants.set(setOf("", "dev"))
-    catalog.set(file("sample.versions.toml"))
+    versionCatalog.set(file("sample.versions.toml"))
 }
