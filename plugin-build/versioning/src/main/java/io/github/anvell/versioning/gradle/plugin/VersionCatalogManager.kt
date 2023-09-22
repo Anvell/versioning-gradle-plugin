@@ -1,6 +1,7 @@
 package io.github.anvell.versioning.gradle.plugin
 
 import io.github.anvell.versioning.gradle.plugin.models.CalendarVersion
+import org.gradle.api.GradleException
 import org.tomlj.Toml
 
 private const val GroupLabel = "versions"
@@ -12,9 +13,9 @@ internal object VersionCatalogManager {
         input: String
     ): Pair<CalendarVersion, Long> = with(Toml.parse(input)) {
         val versionName = getString(listOf(GroupLabel, VersionLabel))
-            ?: error("Version name is not specified")
+            ?: throw GradleException("Version name is not specified")
         val versionCode = getLong(listOf(GroupLabel, CodeLabel))
-            ?: error("Version code is not specified")
+            ?: throw GradleException("Version code is not specified")
         val version = CalendarVersion.parse(versionName).getOrThrow()
 
         version to versionCode

@@ -40,23 +40,31 @@ class GradleVersioningPlugin : Plugin<Project> {
                 tasks.register(PublishCatalogTaskLabel) { task ->
                     task.group = TaskGroupLabel
 
-                    task.doLast { publishVersionCatalog(project, extension) }
+                    task.doLast { publishVersion(project, extension) }
                 }
             }
         }
     }
 
-    private fun publishVersionCatalog(
+    private fun publishVersion(
         project: Project,
         extension: GradleVersioningExtension
     ) {
         val actions = extension.actions.get()
         val file = extension.versionCatalog.asFile.get()
+
+        if (!extension.versionCatalog.isPresent) {
+            println("Version catalog property is not configured")
+            return
+        }
+
         val vcsPath = file.toRelativeString(project.rootDir)
         val vcsContent = actions.getLatestContents(vcsPath)
         val now = LocalDateTime.now(ZoneOffset.UTC)
 
         if (vcsContent.isEmpty()) {
+            println("No version catalog is found, creating new one: $vcsPath")
+
             val newVersion = CalendarVersion.generate(now, revision = 1)
             val newCode = 1L
             val newContent = VersionCatalogManager.serialize(newVersion, newCode)
