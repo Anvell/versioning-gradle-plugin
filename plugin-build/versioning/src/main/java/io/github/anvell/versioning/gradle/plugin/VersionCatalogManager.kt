@@ -5,8 +5,8 @@ import org.gradle.api.GradleException
 import org.tomlj.Toml
 
 private const val GroupLabel = "versions"
-private const val VersionLabel = "versionName"
-private const val CodeLabel = "versionCode"
+private const val VersionLabel = "name"
+private const val CodeLabel = "code"
 
 internal object VersionCatalogManager {
     fun deserialize(
