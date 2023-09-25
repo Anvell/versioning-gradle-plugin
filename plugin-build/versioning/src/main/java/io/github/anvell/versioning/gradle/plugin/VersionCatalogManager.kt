@@ -5,8 +5,8 @@ import org.gradle.api.GradleException
 import org.tomlj.Toml
 
 private const val GroupLabel = "versions"
-private const val VersionLabel = "versionName"
-private const val CodeLabel = "versionCode"
+private const val VersionLabel = "name"
+private const val CodeLabel = "code"
 
 internal object VersionCatalogManager {
     fun deserialize(
@@ -14,8 +14,9 @@ internal object VersionCatalogManager {
     ): Pair<CalendarVersion, Long> = with(Toml.parse(input)) {
         val versionName = getString(listOf(GroupLabel, VersionLabel))
             ?: throw GradleException("Version name is not specified")
-        val versionCode = getLong(listOf(GroupLabel, CodeLabel))
-            ?: throw GradleException("Version code is not specified")
+        val versionCode = getString(listOf(GroupLabel, CodeLabel))
+            ?.toLongOrNull()
+            ?: throw GradleException("Version code is not specified correctly")
         val version = CalendarVersion.parse(versionName).getOrThrow()
 
         version to versionCode
@@ -27,6 +28,6 @@ internal object VersionCatalogManager {
     ) = buildString {
         appendLine("[$GroupLabel]")
         appendLine("$VersionLabel = \"$version\"")
-        appendLine("$CodeLabel = $code")
+        appendLine("$CodeLabel = \"$code\"")
     }
 }
