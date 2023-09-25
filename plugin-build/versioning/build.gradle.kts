@@ -37,6 +37,7 @@ pluginBundle {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(gradleApi())
+    implementation(libs.toml)
 
     testImplementation(libs.junit)
 }
