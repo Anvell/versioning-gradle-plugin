@@ -1,6 +1,6 @@
 # Versioning Gradle Plugin
 
-Calculate and apply automatic [CalVer](https://calver.org) tags to your project.
+Calculate and apply automatic [CalVer](https://calver.org) commits and tags to your project.
 
 ## Setup
 
@@ -13,23 +13,38 @@ plugins {
 ```
 
 ## How to use
-### Configure extension
+### Basic configuration
 
 ``` kotlin
 configureVersioning {
-    remote.set("your-remote-name") // Default is 'origin'
-    autoPush.set(true) // Set 'true' to push tags automatically
-    branches.put("develop", "dev") // Set allowed branches with specific suffixes
+    // Default is 'origin'
+    remote.set("your-remote-name")
+
+    // Set 'true' to push automatically
+    autoPush.set(true)
+
+    // Specify version catalog to use
+    versionCatalog.set(file("gradle/project.versions.toml"))
 }
 ```
 
-### Apply version tag
+### Create version commit
 
-Plugin attempts to parse latest tag and increment version according to [CalVer](https://calver.org) rules.
+In order to create new version launch Gradle task:
+
+```shell
+$ ./gradlew publishVersion
+```
+
+This will increment latest version from version catalog found in VCS history according to [CalVer](https://calver.org) rules, create commit and optionally push it to the remote.
+
+### Create version tag
 
 ```shell
 $ ./gradlew publishVersionTag
 ```
+
+Plugin will attempt to parse latest tag and increment version according to [CalVer](https://calver.org) rules. Using different `variants` allows to tag the same version for different environments.
 
 ## Contributing
 
