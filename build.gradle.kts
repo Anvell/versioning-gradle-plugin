@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.versionCheck)
+    id("io.github.anvell.versioning.gradle.plugin")
 }
 
 subprojects {
@@ -32,6 +33,11 @@ subprojects {
     detekt {
         config = rootProject.files("config/detekt/detekt.yml")
     }
+}
+
+configureVersioning {
+    autoPush.set(false)
+    versionCatalog.set(file("gradle/project.versions.toml"))
 }
 
 tasks.withType<Detekt>().configureEach {

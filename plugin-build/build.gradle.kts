@@ -10,9 +10,11 @@ plugins {
     alias(libs.plugins.versionCheck)
 }
 
+val versionName = projectVersioning.versions.name.get()
+
 allprojects {
     group = property("GROUP").toString()
-    version = property("VERSION").toString()
+    version = versionName
 
     apply {
         plugin(rootProject.libs.plugins.detekt.get().pluginId)

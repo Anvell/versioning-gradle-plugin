@@ -13,6 +13,12 @@ dependencyResolutionManagement {
         mavenCentral()
         google()
     }
+
+    versionCatalogs {
+        create("projectVersioning") {
+            from(files("gradle/project.versions.toml"))
+        }
+    }
 }
 
 plugins {

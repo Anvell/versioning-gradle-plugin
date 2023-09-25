@@ -19,6 +19,11 @@ dependencyResolutionManagement {
             from(files("../gradle/libs.versions.toml"))
         }
     }
+    versionCatalogs {
+        create("projectVersioning") {
+            from(files("../gradle/project.versions.toml"))
+        }
+    }
 }
 
 plugins {
