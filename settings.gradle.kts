@@ -37,5 +37,3 @@ gradleEnterprise {
 rootProject.name = "Versioning Gradle Plugin"
 
 includeBuild("plugin-build")
-
-include(":sample")
