@@ -14,7 +14,6 @@ java {
 gradlePlugin {
     website = property("WEBSITE").toString()
     vcsUrl = property("VCS_URL").toString()
-    description = property("DESCRIPTION").toString()
 
     plugins {
         create(property("ID").toString()) {
@@ -22,6 +21,7 @@ gradlePlugin {
             implementationClass = property("IMPLEMENTATION_CLASS").toString()
             version = projectVersioning.versions.name.get()
             displayName = property("DISPLAY_NAME").toString()
+            description = property("DESCRIPTION").toString()
             tags = listOf(
                 "CalVer",
                 "Versioning",

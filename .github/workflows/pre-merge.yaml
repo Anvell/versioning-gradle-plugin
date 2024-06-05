@@ -21,7 +21,12 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: adopt
+          java-version: 17
+
       - name: Run Gradle tasks
         run: ./gradlew preMerge --continue
