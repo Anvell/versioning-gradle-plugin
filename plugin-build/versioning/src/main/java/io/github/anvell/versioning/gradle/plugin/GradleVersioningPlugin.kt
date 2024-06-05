@@ -25,6 +25,7 @@ class GradleVersioningPlugin : Plugin<Project> {
                 autoPush.convention(false)
                 variants.convention(setOf(""))
                 branches.convention(emptySet())
+                useShorterFormat.convention(false)
                 commitTemplate.convention("Version: %s")
             }
 
@@ -53,6 +54,7 @@ class GradleVersioningPlugin : Plugin<Project> {
     ) {
         val actions = extension.actions.get()
         val file = extension.versionCatalog.asFile.get()
+        val useShorterFormat = extension.useShorterFormat.get()
 
         if (!extension.versionCatalog.isPresent) {
             println("Version catalog property is not configured")
@@ -66,9 +68,13 @@ class GradleVersioningPlugin : Plugin<Project> {
         if (vcsContent.isEmpty()) {
             println("No version catalog is found, creating new one: $vcsPath")
 
-            val newVersion = CalendarVersion.generate(now, revision = 1)
+            val newVersion = CalendarVersion.create(now, revision = 1)
             val newCode = 1L
-            val newContent = VersionCatalogManager.serialize(newVersion, newCode)
+            val newContent = VersionCatalogManager.serialize(
+                version = newVersion,
+                code = newCode,
+                useShorterFormat = useShorterFormat
+            )
             file.writeText(newContent)
 
             val comment = extension
@@ -82,7 +88,8 @@ class GradleVersioningPlugin : Plugin<Project> {
             val newCode = prevCode + 1
             val newContent = VersionCatalogManager.serialize(
                 version = prevVersion.increment(now),
-                code = newCode
+                code = newCode,
+                useShorterFormat = useShorterFormat
             )
             file.writeText(newContent)
 
@@ -105,6 +112,7 @@ class GradleVersioningPlugin : Plugin<Project> {
         val actions = extension.actions.get()
         val branch = actions.getBranchName()
         val branches = extension.branches.get()
+        val shortFormat = extension.useShorterFormat.get()
 
         if (branches.isNotEmpty() &&
             branches.none { it.matches(branch) }
@@ -119,8 +127,8 @@ class GradleVersioningPlugin : Plugin<Project> {
         val version = if (headTags.isNotEmpty()) {
             val headVersions = buildMap {
                 for (tag in headTags) {
-                    CalendarVersion.parse(tag).onSuccess {
-                        put(tag.substringAfter('-', ""), it)
+                    CalendarVersion.parse(now, tag).onSuccess {
+                        put(tag.substringAfter(CalendarVersion.SuffixSeparator, ""), it)
                     }
                 }
             }
@@ -137,11 +145,8 @@ class GradleVersioningPlugin : Plugin<Project> {
         } else {
             calendarVersionFrom(latestTag, now)
         }
-        val suffix = variant
-            .takeUnless(String?::isNullOrBlank)
-            ?.let { "-$it" }
-            .orEmpty()
-        val versionTag = version.toString() + suffix
+        val suffix = variant.takeUnless(String?::isNullOrBlank)
+        val versionTag = version.formatVersion(shortFormat, suffix)
 
         actions.addTag(versionTag)
 
@@ -154,8 +159,8 @@ class GradleVersioningPlugin : Plugin<Project> {
         previousTag: String,
         pointInTime: LocalDateTime
     ) = CalendarVersion
-        .parse(previousTag)
+        .parse(pointInTime, previousTag)
         .getOrNull()
         ?.increment(pointInTime)
-        ?: CalendarVersion.generate(pointInTime, revision = 1)
+        ?: CalendarVersion.create(pointInTime, revision = 1)
 }
