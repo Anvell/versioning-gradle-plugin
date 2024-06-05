@@ -61,7 +61,9 @@ class GradleVersioningPlugin : Plugin<Project> {
             return
         }
 
-        val vcsPath = file.toRelativeString(project.rootDir)
+        val vcsPath = file
+            .toRelativeString(project.rootDir)
+            .replace('\\', '/')
         val vcsContent = actions.getLatestContents(vcsPath)
         val now = LocalDateTime.now(ZoneOffset.UTC)
 
