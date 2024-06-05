@@ -32,6 +32,15 @@ interface GradleVersioningExtension {
     val branches: SetProperty<Regex>
 
     /**
+     * Controls whether to use `####.##.##` or `##.##.##` format.
+     * Note that shorter format makes assumption that versions
+     * are published within the same century.
+     *
+     * Default is `false`.
+     */
+    val useShorterFormat: Property<Boolean>
+
+    /**
      * Custom VCS message template, default is 'Version: %s'.
      */
     val commitTemplate: Property<String>

@@ -3,30 +3,55 @@ package io.github.anvell.versioning.gradle.plugin.models
 import io.github.anvell.versioning.gradle.plugin.extensions.toPaddedString
 import java.time.LocalDateTime
 
-private const val NumPadding = 2
+private const val NumberPadding = 2
+private const val ShortMajorLen = 2
 
 internal data class CalendarVersion(
     val major: Int,
     val minor: Int,
     val revision: Int
 ) {
+    fun increment(pointInTime: LocalDateTime): CalendarVersion {
+        val year = pointInTime.year.toString()
+        val yearVariants = setOf(year, year.takeLast(ShortMajorLen))
 
-    fun increment(pointInTime: LocalDateTime) = when {
-        major == pointInTime.year &&
-            minor == pointInTime.monthValue -> {
-            copy(revision = revision + 1)
-        }
-        else -> {
-            generate(pointInTime, 1)
+        return when {
+            major.toString() in yearVariants && minor == pointInTime.monthValue -> {
+                copy(
+                    major = pointInTime.year, // Revert to full year if it was truncated
+                    revision = revision + 1
+                )
+            }
+            else -> {
+                create(pointInTime, 1)
+            }
         }
     }
 
-    override fun toString() = "$major" +
-        ".${minor.toPaddedString(NumPadding)}" +
-        ".${revision.toPaddedString(NumPadding)}"
+    fun formatVersion(
+        useShorterFormat: Boolean,
+        suffixValue: String? = null
+    ) = buildString {
+        append(
+            when {
+                useShorterFormat -> major
+                    .toPaddedString(NumberPadding)
+                    .takeLast(ShortMajorLen)
+                else -> major
+                    .toPaddedString(NumberPadding)
+            }
+        )
+        append(PartSeparator + minor.toPaddedString(NumberPadding))
+        append(PartSeparator + revision.toPaddedString(NumberPadding))
+
+        suffixValue?.run { append(SuffixSeparator + suffixValue) }
+    }
 
     companion object {
-        fun generate(
+        const val PartSeparator = '.'
+        const val SuffixSeparator = '-'
+
+        fun create(
             pointInTime: LocalDateTime,
             revision: Int
         ) = CalendarVersion(
@@ -35,17 +60,30 @@ internal data class CalendarVersion(
             revision = revision
         )
 
-        fun parse(versionTag: String) = runCatching {
+        fun parse(
+            pointInTime: LocalDateTime,
+            versionTag: String
+        ) = runCatching {
+            val yearValue = pointInTime.year.toString()
             val rawValues = versionTag
-                .substringBefore('-')
-                .split('.')
+                .substringBefore(SuffixSeparator)
+                .split(PartSeparator)
 
             require(rawValues.size == 3) {
                 "Value '$versionTag' does not match versioning scheme."
             }
 
+            // Revert to full year if it was truncated
+            val majorValue = when {
+                rawValues[0].length == ShortMajorLen &&
+                    yearValue.length > ShortMajorLen -> {
+                    yearValue.take(yearValue.length - ShortMajorLen) + rawValues[0]
+                }
+                else -> rawValues[0]
+            }
+
             CalendarVersion(
-                major = rawValues[0].toInt(),
+                major = majorValue.toInt(),
                 minor = rawValues[1].toInt(),
                 revision = rawValues[2].toInt()
             )
