@@ -8,7 +8,7 @@ Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#s
 
 ``` kotlin
 plugins {
-    id("io.github.anvell.versioning.gradle.plugin") version "2023.09.01"
+    id("io.github.anvell.versioning.gradle.plugin") version "2024.06.01"
 }
 ```
 
