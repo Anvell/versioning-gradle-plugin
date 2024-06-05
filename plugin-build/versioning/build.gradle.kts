@@ -7,31 +7,29 @@ plugins {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 gradlePlugin {
+    website = property("WEBSITE").toString()
+    vcsUrl = property("VCS_URL").toString()
+    description = property("DESCRIPTION").toString()
+
     plugins {
         create(property("ID").toString()) {
             id = property("ID").toString()
             implementationClass = property("IMPLEMENTATION_CLASS").toString()
             version = projectVersioning.versions.name.get()
             displayName = property("DISPLAY_NAME").toString()
+            tags = listOf(
+                "CalVer",
+                "Versioning",
+                "Git",
+                "Automation"
+            )
         }
     }
-}
-
-pluginBundle {
-    website = property("WEBSITE").toString()
-    vcsUrl = property("VCS_URL").toString()
-    description = property("DESCRIPTION").toString()
-    tags = listOf(
-        "CalVer",
-        "Versioning",
-        "Git",
-        "Automation"
-    )
 }
 
 dependencies {
