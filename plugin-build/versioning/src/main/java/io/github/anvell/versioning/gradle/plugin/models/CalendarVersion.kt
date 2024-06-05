@@ -34,11 +34,12 @@ internal data class CalendarVersion(
     ) = buildString {
         append(
             when {
-                useShorterFormat -> major
-                    .toPaddedString(NumberPadding)
-                    .takeLast(ShortMajorLen)
-                else -> major
-                    .toPaddedString(NumberPadding)
+                useShorterFormat -> {
+                    major.toPaddedString(NumberPadding).takeLast(ShortMajorLen)
+                }
+                else -> {
+                    major.toPaddedString(NumberPadding)
+                }
             }
         )
         append(PartSeparator + minor.toPaddedString(NumberPadding))
