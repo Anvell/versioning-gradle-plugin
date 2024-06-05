@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: Cache Gradle Caches
-        uses: gradle/gradle-build-action@v2
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
       - name: Run Gradle tasks
         run: ./gradlew preMerge --continue
