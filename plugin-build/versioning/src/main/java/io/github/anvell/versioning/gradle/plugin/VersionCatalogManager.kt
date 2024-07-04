@@ -11,26 +11,28 @@ private const val VersionLabel = "name"
 private const val CodeLabel = "code"
 
 internal object VersionCatalogManager {
-    fun deserialize(
-        input: String
-    ): Pair<CalendarVersion, Long> = with(Toml.parse(input)) {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
-        val versionName = getString(listOf(GroupLabel, VersionLabel))
-            ?: throw GradleException("Version name is not specified")
-        val versionCode = getString(listOf(GroupLabel, CodeLabel))
-            ?.toLongOrNull()
-            ?: throw GradleException("Version code is not specified correctly")
-        val version = CalendarVersion
-            .parse(now, versionName)
-            .getOrThrow()
+    fun deserialize(input: String): Pair<CalendarVersion, Long> =
+        with(Toml.parse(input)) {
+            val now = LocalDateTime.now(ZoneOffset.UTC)
+            val versionName =
+                getString(listOf(GroupLabel, VersionLabel))
+                    ?: throw GradleException("Version name is not specified")
+            val versionCode =
+                getString(listOf(GroupLabel, CodeLabel))
+                    ?.toLongOrNull()
+                    ?: throw GradleException("Version code is not specified correctly")
+            val version =
+                CalendarVersion
+                    .parse(now, versionName)
+                    .getOrThrow()
 
-        version to versionCode
-    }
+            version to versionCode
+        }
 
     fun serialize(
         version: CalendarVersion,
         code: Long,
-        useShorterFormat: Boolean
+        useShorterFormat: Boolean,
     ) = buildString {
         appendLine("[$GroupLabel]")
         appendLine("$VersionLabel = \"${version.formatVersion(useShorterFormat)}\"")

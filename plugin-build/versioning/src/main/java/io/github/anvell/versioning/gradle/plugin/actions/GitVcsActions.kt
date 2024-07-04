@@ -30,7 +30,10 @@ class GitVcsActions : VcsActions {
             readLines().map(String::trim)
         }
 
-    override fun commitFile(filepath: String, comment: String) {
+    override fun commitFile(
+        filepath: String,
+        comment: String,
+    ) {
         runCommand("git", "add", filepath) {
             println(readText())
         }
@@ -50,15 +53,18 @@ class GitVcsActions : VcsActions {
             println(readText())
         }
 
-    override fun pushTag(remote: String, tag: String) =
-        runCommand("git", "push", remote, tag) {
-            println(readText())
-        }
+    override fun pushTag(
+        remote: String,
+        tag: String,
+    ) = runCommand("git", "push", remote, tag) {
+        println(readText())
+    }
 
     override fun getLatestContents(filePath: String): String {
-        val hash = runCommand("git", "log", "--all", "--pretty=format:%H", "-n", "1") {
-            readText()
-        }
+        val hash =
+            runCommand("git", "log", "--all", "--pretty=format:%H", "-n", "1") {
+                readText()
+            }
 
         return runCommand("git", "show", "$hash:$filePath") { readText() }
     }

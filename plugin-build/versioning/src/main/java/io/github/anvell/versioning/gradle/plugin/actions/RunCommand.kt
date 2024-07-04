@@ -6,16 +6,17 @@ import java.util.concurrent.TimeUnit
 
 internal fun <T> runCommand(
     vararg values: String,
-    block: Reader.() -> T
-): T = try {
-    ProcessBuilder(values.toList())
-        .start()
-        .run {
-            waitFor(10, TimeUnit.SECONDS)
-            inputStream
-                .bufferedReader()
-                .use(block)
-        }
-} catch (e: Exception) {
-    throw GradleException(e.message ?: "Error executing command :$values")
-}
+    block: Reader.() -> T,
+): T =
+    try {
+        ProcessBuilder(values.toList())
+            .start()
+            .run {
+                waitFor(10, TimeUnit.SECONDS)
+                inputStream
+                    .bufferedReader()
+                    .use(block)
+            }
+    } catch (e: Exception) {
+        throw GradleException(e.message ?: "Error executing command :$values")
+    }

@@ -6,13 +6,13 @@ import org.junit.Test
 import java.time.LocalDateTime
 
 class CalendarVersionTest {
-
     @Test
     fun `Short version format is respected`() {
         val dateTime = LocalDateTime.of(2024, 1, 10, 12, 0)
-        val version = CalendarVersion
-            .parse(dateTime, "2047.01.10")
-            .getOrThrow()
+        val version =
+            CalendarVersion
+                .parse(dateTime, "2047.01.10")
+                .getOrThrow()
 
         assertEquals("2047.01.10", version.formatVersion(false))
         assertEquals("47.01.10", version.formatVersion(true))
@@ -21,9 +21,10 @@ class CalendarVersionTest {
     @Test
     fun `When year value is short it's expanded to full`() {
         val dateTime = LocalDateTime.of(2024, 1, 10, 12, 0)
-        val version = CalendarVersion
-            .parse(dateTime, "24.01.10")
-            .getOrThrow()
+        val version =
+            CalendarVersion
+                .parse(dateTime, "24.01.10")
+                .getOrThrow()
 
         assertEquals("2024.01.10", version.formatVersion(false))
         assertEquals("24.01.10", version.formatVersion(true))
