@@ -22,12 +22,13 @@ gradlePlugin {
             version = projectVersioning.versions.name.get()
             displayName = property("DISPLAY_NAME").toString()
             description = property("DESCRIPTION").toString()
-            tags = listOf(
-                "CalVer",
-                "Versioning",
-                "Git",
-                "Automation"
-            )
+            tags =
+                listOf(
+                    "CalVer",
+                    "Versioning",
+                    "Git",
+                    "Automation",
+                )
         }
     }
 }

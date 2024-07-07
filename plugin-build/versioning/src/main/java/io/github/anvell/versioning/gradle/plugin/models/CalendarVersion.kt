@@ -9,7 +9,7 @@ private const val ShortMajorLen = 2
 internal data class CalendarVersion(
     val major: Int,
     val minor: Int,
-    val revision: Int
+    val revision: Int,
 ) {
     fun increment(pointInTime: LocalDateTime): CalendarVersion {
         val year = pointInTime.year.toString()
@@ -18,8 +18,9 @@ internal data class CalendarVersion(
         return when {
             major.toString() in yearVariants && minor == pointInTime.monthValue -> {
                 copy(
-                    major = pointInTime.year, // Revert to full year if it was truncated
-                    revision = revision + 1
+                    // Revert to full year if it was truncated
+                    major = pointInTime.year,
+                    revision = revision + 1,
                 )
             }
             else -> {
@@ -30,7 +31,7 @@ internal data class CalendarVersion(
 
     fun formatVersion(
         useShorterFormat: Boolean,
-        suffixValue: String? = null
+        suffixValue: String? = null,
     ) = buildString {
         append(
             when {
@@ -40,7 +41,7 @@ internal data class CalendarVersion(
                 else -> {
                     major.toPaddedString(NumberPadding)
                 }
-            }
+            },
         )
         append(PartSeparator + minor.toPaddedString(NumberPadding))
         append(PartSeparator + revision.toPaddedString(NumberPadding))
@@ -54,39 +55,41 @@ internal data class CalendarVersion(
 
         fun create(
             pointInTime: LocalDateTime,
-            revision: Int
+            revision: Int,
         ) = CalendarVersion(
             major = pointInTime.year,
             minor = pointInTime.monthValue,
-            revision = revision
+            revision = revision,
         )
 
         fun parse(
             pointInTime: LocalDateTime,
-            versionTag: String
+            versionTag: String,
         ) = runCatching {
             val yearValue = pointInTime.year.toString()
-            val rawValues = versionTag
-                .substringBefore(SuffixSeparator)
-                .split(PartSeparator)
+            val rawValues =
+                versionTag
+                    .substringBefore(SuffixSeparator)
+                    .split(PartSeparator)
 
             require(rawValues.size == 3) {
                 "Value '$versionTag' does not match versioning scheme."
             }
 
             // Revert to full year if it was truncated
-            val majorValue = when {
-                rawValues[0].length == ShortMajorLen &&
-                    yearValue.length > ShortMajorLen -> {
-                    yearValue.take(yearValue.length - ShortMajorLen) + rawValues[0]
+            val majorValue =
+                when {
+                    rawValues[0].length == ShortMajorLen &&
+                        yearValue.length > ShortMajorLen -> {
+                        yearValue.take(yearValue.length - ShortMajorLen) + rawValues[0]
+                    }
+                    else -> rawValues[0]
                 }
-                else -> rawValues[0]
-            }
 
             CalendarVersion(
                 major = majorValue.toInt(),
                 minor = rawValues[1].toInt(),
-                revision = rawValues[2].toInt()
+                revision = rawValues[2].toInt(),
             )
         }
     }

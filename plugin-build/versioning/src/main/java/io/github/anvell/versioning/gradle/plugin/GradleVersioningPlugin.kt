@@ -14,20 +14,20 @@ private const val TaskGroupLabel = "versioning"
 private const val ExtensionLabel = "configureVersioning"
 
 class GradleVersioningPlugin : Plugin<Project> {
-
     override fun apply(project: Project) {
-        val extension = project
-            .extensions
-            .create(ExtensionLabel, GradleVersioningExtension::class.java)
-            .apply {
-                actions.convention(GitVcsActions())
-                remote.convention("origin")
-                autoPush.convention(false)
-                variants.convention(setOf(""))
-                branches.convention(emptySet())
-                useShorterFormat.convention(false)
-                commitTemplate.convention("Version: %s")
-            }
+        val extension =
+            project
+                .extensions
+                .create(ExtensionLabel, GradleVersioningExtension::class.java)
+                .apply {
+                    actions.convention(GitVcsActions())
+                    remote.convention("origin")
+                    autoPush.convention(false)
+                    variants.convention(setOf(""))
+                    branches.convention(emptySet())
+                    useShorterFormat.convention(false)
+                    commitTemplate.convention("Version: %s")
+                }
 
         with(project) {
             afterEvaluate {
@@ -50,7 +50,7 @@ class GradleVersioningPlugin : Plugin<Project> {
 
     private fun publishVersion(
         project: Project,
-        extension: GradleVersioningExtension
+        extension: GradleVersioningExtension,
     ) {
         val actions = extension.actions.get()
         val file = extension.versionCatalog.asFile.get()
@@ -61,9 +61,10 @@ class GradleVersioningPlugin : Plugin<Project> {
             return
         }
 
-        val vcsPath = file
-            .toRelativeString(project.rootDir)
-            .replace('\\', '/')
+        val vcsPath =
+            file
+                .toRelativeString(project.rootDir)
+                .replace('\\', '/')
         val vcsContent = actions.getLatestContents(vcsPath)
         val now = LocalDateTime.now(ZoneOffset.UTC)
 
@@ -72,36 +73,40 @@ class GradleVersioningPlugin : Plugin<Project> {
 
             val newVersion = CalendarVersion.create(now, revision = 1)
             val newCode = 1L
-            val newContent = VersionCatalogManager.serialize(
-                version = newVersion,
-                code = newCode,
-                useShorterFormat = useShorterFormat
-            )
+            val newContent =
+                VersionCatalogManager.serialize(
+                    version = newVersion,
+                    code = newCode,
+                    useShorterFormat = useShorterFormat,
+                )
             file.writeText(newContent)
 
-            val comment = extension
-                .commitTemplate
-                .get()
-                .format(newVersion.formatVersion(useShorterFormat))
+            val comment =
+                extension
+                    .commitTemplate
+                    .get()
+                    .format(newVersion.formatVersion(useShorterFormat))
             actions.commitFile(vcsPath, comment)
         } else {
             val (prevVersion, prevCode) = VersionCatalogManager.deserialize(vcsContent)
             val newVersion = prevVersion.increment(now)
             val newCode = prevCode + 1
-            val newContent = VersionCatalogManager.serialize(
-                version = prevVersion.increment(now),
-                code = newCode,
-                useShorterFormat = useShorterFormat
-            )
+            val newContent =
+                VersionCatalogManager.serialize(
+                    version = prevVersion.increment(now),
+                    code = newCode,
+                    useShorterFormat = useShorterFormat,
+                )
             file.writeText(newContent)
 
-            val comment = extension
-                .commitTemplate
-                .get()
-                .format(
-                    "${prevVersion.formatVersion(useShorterFormat)} → " +
-                        newVersion.formatVersion(useShorterFormat)
-                )
+            val comment =
+                extension
+                    .commitTemplate
+                    .get()
+                    .format(
+                        "${prevVersion.formatVersion(useShorterFormat)} → " +
+                            newVersion.formatVersion(useShorterFormat),
+                    )
             actions.commitFile(vcsPath, comment)
         }
 
@@ -112,7 +117,7 @@ class GradleVersioningPlugin : Plugin<Project> {
 
     private fun publishVersionTag(
         extension: GradleVersioningExtension,
-        variant: String? = null
+        variant: String? = null,
     ) {
         val actions = extension.actions.get()
         val branch = actions.getBranchName()
@@ -129,27 +134,29 @@ class GradleVersioningPlugin : Plugin<Project> {
         val latestTag = actions.getLatestTag()
         val now = LocalDateTime.now(ZoneOffset.UTC)
         val headTags = actions.getHeadTags()
-        val version = if (headTags.isNotEmpty()) {
-            val headVersions = buildMap {
-                for (tag in headTags) {
-                    CalendarVersion.parse(now, tag).onSuccess {
-                        put(tag.substringAfter(CalendarVersion.SuffixSeparator, ""), it)
+        val version =
+            if (headTags.isNotEmpty()) {
+                val headVersions =
+                    buildMap {
+                        for (tag in headTags) {
+                            CalendarVersion.parse(now, tag).onSuccess {
+                                put(tag.substringAfter(CalendarVersion.SuffixSeparator, ""), it)
+                            }
+                        }
                     }
+
+                if (variant.orEmpty() in headVersions) {
+                    println("Version tag is already applied on current commit")
+                    return
                 }
-            }
 
-            if (variant.orEmpty() in headVersions) {
-                println("Version tag is already applied on current commit")
-                return
+                headVersions
+                    .values
+                    .firstOrNull()
+                    ?: calendarVersionFrom(latestTag, now)
+            } else {
+                calendarVersionFrom(latestTag, now)
             }
-
-            headVersions
-                .values
-                .firstOrNull()
-                ?: calendarVersionFrom(latestTag, now)
-        } else {
-            calendarVersionFrom(latestTag, now)
-        }
         val suffix = variant.takeUnless(String?::isNullOrBlank)
         val versionTag = version.formatVersion(shortFormat, suffix)
 
@@ -162,7 +169,7 @@ class GradleVersioningPlugin : Plugin<Project> {
 
     private fun calendarVersionFrom(
         previousTag: String,
-        pointInTime: LocalDateTime
+        pointInTime: LocalDateTime,
     ) = CalendarVersion
         .parse(pointInTime, previousTag)
         .getOrNull()
