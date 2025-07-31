@@ -1,5 +1,3 @@
-@file:Suppress("DSL_SCOPE_VIOLATION")
-
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import io.gitlab.arturbosch.detekt.Detekt
 

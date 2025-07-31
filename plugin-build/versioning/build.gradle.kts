@@ -1,4 +1,3 @@
-@file:Suppress("DSL_SCOPE_VIOLATION", "UnstableApiUsage")
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
