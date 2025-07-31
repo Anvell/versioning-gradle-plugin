@@ -1,9 +1,13 @@
-@file:Suppress("DSL_SCOPE_VIOLATION", "UnstableApiUsage")
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm")
     `java-gradle-plugin`
     alias(libs.plugins.pluginPublish)
+}
+
+kotlin {
+    compilerOptions { jvmTarget = JvmTarget.JVM_17 }
 }
 
 java {
